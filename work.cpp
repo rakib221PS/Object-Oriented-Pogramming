@@ -1,13 +1,18 @@
 #include <iostream>
+#include <vector>
 
 class Work
 {
-    int number_of_work_available;
+    static int number_of_work_available;
     std::string text_description;
     std::string name;
 
 public:
-    int number_of_works_available()
+    Work(){}
+    Work(std::string text, std::string owner):text_description(text), name(owner){
+        number_of_work_available++;
+    }
+    static int count()
     {
         return number_of_work_available;
     }
@@ -40,9 +45,11 @@ class FieldWork : public Work
     int length, wide, cost_of_per_square;
 
 public:
+    FieldWork(){}
+    FieldWork(std::string name, std::string owner, int length, int wide, int cost):Work(name, owner), length(length), wide(wide), cost_of_per_square(cost){}
     virtual int getCost() override
     {
-        return 1;
+        return length * wide * cost_of_per_square;
     }
     virtual ~FieldWork()
     {
@@ -62,14 +69,29 @@ class TimeWork:public Work{
 class Schedule{
     std::string description;
     int total_budget;
-    Work *total_work = new Work[5];
+    // FieldWork *total_work = new FieldWork[5];
+    // std::vector<FieldWork*>total_work;
+    std::vector<Work*>total_work;
 
     public:
+    Schedule(std::string des, int total_budget):description(des), total_budget(total_budget){}
+    void insert(int id, FieldWork *p){
+        total_work.push_back(p);
+    }
 
-    virtual int getCost() = 0;
+    void cost(){
+        total_work[1]->getCost();
+    }
 };
+
+int Work::number_of_work_available = 0;
 
 int main()
 {
+    Schedule repairs("Expected repairs of my room", 2000);
+    std::cout<<Work::count();
+    repairs.insert(1,new FieldWork("Floor","John",4,5,60));
+    repairs.insert(4,new FieldWork("Wall","Hasan",9,89,69));
+    repairs.cost();
     return 0;
 }
