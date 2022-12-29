@@ -232,7 +232,9 @@ int main()
     oo.addDish("ice cream", 15);
     if (oo > o1)
         std::cout << "Order " << oo.getID() << " is more expensive than " << o1.getID();
+        // error here
     //  o1[1] = 21;
+    o1[1];
     oo.removeDish("tomato soup");
     std::cout << std::endl;
     std::cout << ConsumerOrder::getOrderCount() << std::endl;
