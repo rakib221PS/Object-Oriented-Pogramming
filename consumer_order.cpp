@@ -33,7 +33,8 @@ public:
         {
             throw std::runtime_error("Overflow");
         }
-        update_index = index;
+        // update_index = index;
+        // return order_details[index][0];
     }
     // --------------------------------------------------------------------------operator<< declaration---------------
     friend std::ostream& operator<<(std::ostream &os, const ConsumerOrder &parent);
@@ -221,10 +222,7 @@ int main()
     o1.addDish("vegetable soup", 20);
     o1.addDish("apple pie", 19);
     std::cout << o1.length() << std::endl;
-    // -----------------------------------------------------------issue start-------------------------
-    // here std::cout<<o1 is not matching with implement overloading
     std::cout<<o1;
-    // -----------------------------------------------------------issue end-------------------------
     ConsumerOrder oo("Andrew Taylor");
     oo.addDish("tomato soup", 20);
     oo.addDish("grilled chicken", 45);
@@ -232,19 +230,19 @@ int main()
     oo.addDish("ice cream", 15);
     if (oo > o1)
         std::cout << "Order " << oo.getID() << " is more expensive than " << o1.getID();
-        // error here
+    // -----------------------------------------------------------issue start-------------------------
     //  o1[1] = 21;
+    // -----------------------------------------------------------issue end-------------------------
     o1[1];
     oo.removeDish("tomato soup");
     std::cout << std::endl;
     std::cout << ConsumerOrder::getOrderCount() << std::endl;
     // -----------------------------------------------------------issue start-------------------------
     // here vector memory is not allocationg
-    ConsumerOrder o2 = o1;
+    // ConsumerOrder o2 = o1;
     // -----------------------------------------------------------issue end-------------------------
     ConsumerOrder o3;
     o3 = o1;
     return 0;
 }
 
-// please fix this problem or give me some resources that I can figure out

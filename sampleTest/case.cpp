@@ -28,6 +28,19 @@ public:
     }
 };
 
+class NameError : std::exception
+{
+    std::string error_name;
+
+public:
+    NameError() {}
+    NameError(std::string error_name) : error_name(error_name) {}
+    std::string what()
+    {
+        return "Item name " + error_name + " not found";
+    }
+};
+
 class Case
 {
     static int cases;
@@ -100,7 +113,7 @@ public:
     }
 };
 
-class Repository : public CapacityError, public IndexError
+class Repository : public CapacityError, public IndexError, public NameError
 {
     std::string description;
     float total_capacity;
@@ -171,6 +184,31 @@ public:
         }
     }
 
+    int itemIndex(std::string name){
+        int size = cases.size();
+        for (int i = 0; i < size; i++)
+        {
+            if (cases[i]->getLabel() == name)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    Case &operator[](const std::string name)
+    {
+        int index = itemIndex(name);
+        if (index >= 0)
+        {
+            return *cases[index];
+        }
+        else
+        {
+            throw NameError(name);
+        }
+    }
+
     void clear()
     {
         int length = cases.size();
@@ -211,6 +249,15 @@ int main()
         std::cout << repo[5].getCapacity() << std::endl; // IndexError exception
     }
     catch (Repository::IndexError &e)
+    {
+        std::cout << e.what() << std::endl; // item no. 5 not found
+    }
+
+    try
+    {
+        std::cout << repo["books"].getCapacity() << std::endl;
+    }
+    catch (Repository::NameError &e)
     {
         std::cout << e.what() << std::endl; // item no. 5 not found
     }
