@@ -4,15 +4,14 @@
 
 class ConsumerOrder
 {
-    static int total_consumer_order;
-    int most_expensive_index = 0;
-    int single_consumer_order = 0;
+    static int unique_id_handler;
     int update_index;
     std::string customer_name;
     // std::string *names_of_disches = new std::string[5];
     std::vector<std::string> names_of_disches;
     // int **order_details = new int *[5];
-    std::vector<std::vector<int>> order_details;
+    std::vector<int> order_details;
+    int unique_id;
 
 public:
     static int getOrderCount();
@@ -20,86 +19,80 @@ public:
     ConsumerOrder(std::string);
     ConsumerOrder(const ConsumerOrder &);
     void operator=(const ConsumerOrder &);
+    ConsumerOrder &operator=(const int);
     void setCustomer();
     std::string getCustomer();
     int getID();
     void addDish(const std::string, const int);
     void removeDish(const std::string);
     int length();
+    int getTotalCost();
     ~ConsumerOrder();
     ConsumerOrder &operator[](const int index)
     {
-        if (index >= single_consumer_order)
+        if (index >= this->order_details.size())
         {
             throw std::runtime_error("Overflow");
         }
-        // update_index = index;
-        // return order_details[index][0];
+        update_index = index;
+        return *this;
     }
     // --------------------------------------------------------------------------operator<< declaration---------------
-    friend std::ostream& operator<<(std::ostream &os, const ConsumerOrder &parent);
+    friend std::ostream &operator<<(std::ostream &os, const ConsumerOrder &parent);
     // void operator<<(const ConsumerOrder &);
     bool operator>(ConsumerOrder &);
 };
 
-ConsumerOrder::ConsumerOrder() : names_of_disches(5), order_details(5)
+ConsumerOrder::ConsumerOrder()
 {
-    for (int i = 0; i < 5; i++)
-    {
-        // order_details[i] = new int[2];
-        order_details[i] = std::vector<int>(2);
-    }
 }
 
-ConsumerOrder::ConsumerOrder(const std::string name) : names_of_disches(5), order_details(5)
+ConsumerOrder::ConsumerOrder(const std::string name)
 {
     customer_name = name;
-    for (int i = 0; i < 5; i++)
-    {
-        // order_details[i] = new int[2];
-        order_details[i] = std::vector<int>(2);
-    }
-    if (single_consumer_order <= 0)
-    {
-        total_consumer_order++;
-    }
+    unique_id = unique_id_handler++;
     std::cout << customer_name << std::endl;
 }
 
 ConsumerOrder::ConsumerOrder(const ConsumerOrder &parent)
 {
-    if (this != &parent)
-    {
+    // if (this != &parent)
+    // {
         this->customer_name = parent.customer_name;
-        this->single_consumer_order = parent.single_consumer_order;
-        this->most_expensive_index = parent.most_expensive_index;
         this->update_index = parent.update_index;
-
-        for (int i = 0; i < parent.single_consumer_order; i++)
-        {
-            names_of_disches[i] = parent.names_of_disches[i];
-            order_details[i][0] = parent.order_details[i][0];
-            order_details[i][1] = parent.order_details[i][1];
-        }
-    }
+        this->unique_id = parent.unique_id;
+        // int size = parent.order_details.size();
+        // for (int i = 0; i < size; i++)
+        // {
+        //     this->names_of_disches.push_back(parent.names_of_disches[i]);
+        //     this->order_details.push_back(parent.order_details[i]);
+        // }
+        this->names_of_disches = parent.names_of_disches;
+        this->order_details = parent.order_details;
+    // }
 }
 
 void ConsumerOrder::operator=(const ConsumerOrder &parent)
 {
     if (this != &parent)
     {
-        customer_name = parent.customer_name;
-        single_consumer_order = parent.single_consumer_order;
-        most_expensive_index = parent.most_expensive_index;
-        update_index = parent.update_index;
-
-        for (int i = 0; i < parent.single_consumer_order; i++)
-        {
-            names_of_disches[i] = parent.names_of_disches[i];
-            order_details[i][0] = parent.order_details[i][0];
-            order_details[i][1] = parent.order_details[i][1];
-        }
+        this->customer_name = parent.customer_name;
+        this->update_index = parent.update_index;
+        this->unique_id = parent.unique_id;
+        this->names_of_disches = parent.names_of_disches;
+        this->order_details = parent.order_details;
     }
+}
+
+int ConsumerOrder::getTotalCost()
+{
+    int total = 0;
+    int size = order_details.size();
+    for (int i = 0; i < size; i++)
+    {
+        total += order_details[i];
+    }
+    return total;
 }
 
 std::string ConsumerOrder::getCustomer()
@@ -109,140 +102,140 @@ std::string ConsumerOrder::getCustomer()
 
 int ConsumerOrder::getID()
 {
-    return order_details[most_expensive_index][1];
+    return unique_id;
 }
 
 void ConsumerOrder::addDish(const std::string dish_name, const int price)
 {
-    names_of_disches[single_consumer_order] = dish_name;
-    order_details[single_consumer_order][0] = price;
-    order_details[single_consumer_order][1] = (single_consumer_order + 1) * 1000000;
-    single_consumer_order++;
+    names_of_disches.push_back(dish_name);
+    order_details.push_back(price);
 }
 
 void ConsumerOrder::removeDish(const std::string dish_name)
 {
     int deleting_index = 0;
-    for (int i = 0; i < single_consumer_order; i++)
+    bool isExists = false;
+    int size = order_details.size();
+    for (int i = 0; i < size; i++)
     {
         if (names_of_disches[i] == dish_name)
         {
             deleting_index = i;
-            // break;
+            isExists = true;
+            break;
         }
     }
 
-    names_of_disches.erase(names_of_disches.begin()+deleting_index);
-    order_details[deleting_index].clear();
+    if (!isExists)
+    {
+        throw std::runtime_error(dish_name + " is not exist");
+    }
+
+    names_of_disches.erase(names_of_disches.begin() + deleting_index);
     order_details.erase(order_details.begin() + deleting_index);
 }
 
 int ConsumerOrder::length()
 {
-    return single_consumer_order;
+    return unique_id_handler - 1;
 }
 
 int ConsumerOrder::getOrderCount()
 {
-    if (total_consumer_order <= 0)
+    if ((unique_id_handler - 1) <= 0)
     {
         return 0;
     }
     else
     {
-        return total_consumer_order;
+        return unique_id_handler - 1;
     }
 }
 
-// --------------------------------------------------------------------------------operator<< implementation----------
 
-std::ostream& operator<<(std::ostream& os, const ConsumerOrder &present)
+std::ostream &operator<<(std::ostream &os, const ConsumerOrder &present)
 {
+    // int sizeName = present.names_of_disches.size();
+    int size = present.order_details.size();
     int sum = 0;
-    os << "customer; " << present.customer_name << std::endl;
-    for (int i = 0; i < present.single_consumer_order; i++)
+    os << "order no. " << present.unique_id;
+    os << " customer; " << present.customer_name << std::endl;
+
+    // std::vector<std::string>::iterator name;
+    // std::vector<int>::iterator price;
+    // std::vector<std::string>na = present.names_of_disches;
+    // std::vector<int>order = present.order_details;
+    // int i = 1;
+    // price = order.begin();
+    // name = na.begin();
+    // while (price<order.end())
+    // {
+    //     std::string n = std::to_string(name);
+    //     os<<i<<" "<<n<<" "<<price<<std::endl;
+    //     // sum += price;
+    //     name++;
+    //     price++;
+    // }
+
+    int i = 0;
+    while (i < size)
     {
-        os << i + 1 << ". " << present.names_of_disches[i] << " " << present.order_details[i][1] << std::endl;
-        sum = sum + present.order_details[i][0];
+        os << i + 1 << " " << present.names_of_disches[i] << " " << present.order_details[i] << std::endl;
+        sum += present.order_details[i];
+        i++;
     }
+
     os << "Total cost: " << sum << std::endl;
     return os;
 }
 
+ConsumerOrder &ConsumerOrder::operator=(const int price)
+{
+    order_details[update_index] = price;
+    return *this;
+}
 
 bool ConsumerOrder::operator>(ConsumerOrder &second)
 {
-    this->most_expensive_index = 0;
-    second.most_expensive_index = 0;
-    int first_order_price = this->order_details[0][0];
-    for (int i = 1; i < this->single_consumer_order; i++)
-    {
-        if (this->order_details[i][0] > first_order_price)
-        {
-            first_order_price = order_details[i][0];
-            this->most_expensive_index = i;
-        }
-    }
-
-    int second_order_price = second.order_details[0][0];
-    for (int i = 1; i < second.single_consumer_order; i++)
-    {
-        if (this->order_details[i][0] > first_order_price)
-        {
-            first_order_price = order_details[i][0];
-            second.most_expensive_index = i;
-        }
-    }
-
-    if (first_order_price > second_order_price)
+    if (this->getTotalCost() > second.getTotalCost())
     {
         return true;
     }
-    else
-    {
-        return false;
-    }
+    return false;
 }
 
-ConsumerOrder:: ~ConsumerOrder(){
+ConsumerOrder::~ConsumerOrder()
+{
     names_of_disches.erase(names_of_disches.begin(), names_of_disches.end());
-    for (int i = 0; i < single_consumer_order; i++)
-    {
-       order_details[i].clear();
-       order_details.erase(order_details.begin());
-    }
+    order_details.erase(order_details.begin(), order_details.end());
 }
-int ConsumerOrder::total_consumer_order = 0;
+int ConsumerOrder::unique_id_handler = 1;
 
 int main()
 {
     std::cout << ConsumerOrder::getOrderCount() << std::endl;
     ConsumerOrder o1("Rakib Hasan");
+    // std::cout << ConsumerOrder::getOrderCount() << std::endl;
     std::cout << o1.getCustomer() << std::endl;
     o1.addDish("vegetable soup", 20);
     o1.addDish("apple pie", 19);
     std::cout << o1.length() << std::endl;
-    std::cout<<o1;
+    std::cout << o1;
     ConsumerOrder oo("Andrew Taylor");
     oo.addDish("tomato soup", 20);
     oo.addDish("grilled chicken", 45);
     oo.addDish("tomato soup", 20);
     oo.addDish("ice cream", 15);
+    std::cout << oo;
+    std::cout << "------------------------------" << std::endl;
     if (oo > o1)
         std::cout << "Order " << oo.getID() << " is more expensive than " << o1.getID();
-    // -----------------------------------------------------------issue start-------------------------
-    //  o1[1] = 21;
-    // -----------------------------------------------------------issue end-------------------------
-    o1[1];
+    o1[1] = 21;
     oo.removeDish("tomato soup");
     std::cout << std::endl;
     std::cout << ConsumerOrder::getOrderCount() << std::endl;
-    // -----------------------------------------------------------issue start-------------------------
-    // here vector memory is not allocationg
-    // ConsumerOrder o2 = o1;
-    // -----------------------------------------------------------issue end-------------------------
+    ConsumerOrder o2 = o1;
     ConsumerOrder o3;
     o3 = o1;
     return 0;
 }
-
