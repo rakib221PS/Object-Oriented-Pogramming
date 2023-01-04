@@ -1,19 +1,19 @@
 #include <iostream>
 #include <vector>
 
-class CapacityError : std::exception
-{
-    std::string label_error;
-    int capacity_error;
+// class CapacityError : std::exception
+// {
+//     std::string label_error;
+//     int capacity_error;
 
-public:
-    CapacityError() {}
-    CapacityError(std::string label_error, int capacity_error) : label_error(label_error), capacity_error(capacity_error) {}
-    std::string what()
-    {
-        return label_error + " is too large -> " + std::to_string(capacity_error) + " size space available";
-    }
-};
+// public:
+//     CapacityError() {}
+//     CapacityError(std::string label_error, int capacity_error) : label_error(label_error), capacity_error(capacity_error) {}
+//     std::string what()
+//     {
+//         return label_error + " is too large -> " + std::to_string(capacity_error) + " size space available";
+//     }
+// };
 
 class IndexError : std::exception
 {
@@ -43,25 +43,27 @@ public:
 
 class Case
 {
+    public:
     static int cases;
+    static int count()
+    {
+        return cases;
+    }
+    private:
     std::string label;
     int color;
 
 public:
     Case() {}
     Case(std::string name, int color) : label(name), color(color) {}
-    static void caseIncrease()
-    {
-        cases += 1;
-    }
-    static void caseDecrease()
-    {
-        cases -= 1;
-    }
-    static int count()
-    {
-        return cases;
-    }
+    // static void caseIncrease()
+    // {
+    //     cases += 1;
+    // }
+    // static void caseDecrease()
+    // {
+    //     cases -= 1;
+    // }
     std::string getLabel()
     {
         return label;
@@ -73,6 +75,10 @@ public:
     }
 
     virtual float getCapacity() = 0;
+
+    virtual ~Case(){
+        std::cout<<"Case destructor"<<std::endl;
+    }
 };
 
 int Case::cases = 0;
@@ -87,6 +93,10 @@ public:
     {
         return lenght * width * height;
     }
+
+    // virtual ~BrickCase(){
+    //     std::cout<<"Brick case destructor"<<std::endl;
+    // }
 };
 
 class TubeCase : public Case
@@ -99,6 +109,9 @@ public:
     {
         return base_radius * height;
     }
+    // virtual ~TubeCase(){
+    //     std::cout<<"TubeCase destructor"<<std::endl;
+    // }
 };
 
 class PrismCase : public Case
@@ -111,10 +124,15 @@ public:
     {
         return base_lenght * height;
     }
+    // virtual ~PrismCase(){
+    //     std::cout<<"PrismCase destructor"<<std::endl;
+    // }
 };
 
-class Repository : public CapacityError, public IndexError, public NameError
+class Repository : public IndexError, public NameError
 {
+    std::string label_error;
+    int capacity_error;
     std::string description;
     float total_capacity;
     float remaining_capacity;
@@ -134,6 +152,19 @@ public:
 
         return os;
     }
+    class CapacityError : std::exception
+    {
+        std::string label_error;
+        int capacity_error;
+
+    public:
+        CapacityError() {}
+        CapacityError(std::string label_error, int capacity_error) : label_error(label_error), capacity_error(capacity_error) {}
+        std::string what()
+        {
+            return label_error + " is too large -> " + std::to_string(capacity_error) + " size space available";
+        }
+    };
 
     template <typename T>
     void add(T *p)
@@ -141,7 +172,7 @@ public:
         float capacity = p->getCapacity();
         if (capacity <= remaining_capacity)
         {
-            Case::caseIncrease();
+            Case::cases++;
             cases.push_back(p);
             remaining_capacity = remaining_capacity - capacity;
         }
@@ -166,7 +197,8 @@ public:
             {
                 remaining_capacity = remaining_capacity + cases[n]->getCapacity();
                 cases.erase(it);
-                Case::caseDecrease();
+                // Case::caseDecrease();
+                Case::cases++;
             }
             n++;
         }
@@ -184,7 +216,8 @@ public:
         }
     }
 
-    int itemIndex(std::string name){
+    int itemIndex(std::string name)
+    {
         int size = cases.size();
         for (int i = 0; i < size; i++)
         {
@@ -216,7 +249,7 @@ public:
         remaining_capacity = 0;
         for (int i = 0; i < length; i++)
         {
-            Case::caseDecrease();
+            Case::cases--;
         }
     }
 };
@@ -231,7 +264,7 @@ int main()
         repo.add(new TubeCase("posters", 0x00ff00, 1, 3));      // radius=1, height=3
         repo.add(new PrismCase("toys", 0x800080, 3, 2));        // base=3, height=2
         repo.add(new BrickCase("jewels", 0xffff00, 2, 2, 2));   // 2 x 2 x 2
-        repo.add(new BrickCase("trinkets", 0x000080, 5, 1, 1)); // 5 x 1 x 1
+        repo.add(new BrickCase("trinkets", 0x000080, 5, 5, 1)); // 5 x 1 x 1
     }
     catch (Repository::CapacityError &e)
     {
